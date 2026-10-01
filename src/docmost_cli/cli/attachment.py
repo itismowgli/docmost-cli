@@ -12,7 +12,7 @@ from docmost_cli.api.attachments import (
     search_attachments,
     upload_attachment,
 )
-from docmost_cli.api.pages import get_page_content
+from docmost_cli.api.pages import get_page_info
 from docmost_cli.api.pagination import extract_id
 from docmost_cli.api.spaces import resolve_space_id
 from docmost_cli.cli._list_opts import (
@@ -70,7 +70,9 @@ def attachment_list_cmd(
         query=query,
     )
     if unused:
-        content = get_page_content(client, page_id).get("content")
+        # /pages/info returns the body on both editions; a page that was never
+        # written has none, and then every attachment on it is unused.
+        content = get_page_info(client, page_id, include_content=True).get("content")
         result.items = find_unreferenced(result.items, content)
     columns = ["id", "fileName", "fileSize", "createdAt"]
     emit_list(result, columns, json_mode=json_mode, envelope=envelope, fields=fields)
